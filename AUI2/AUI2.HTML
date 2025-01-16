@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registo de Utilizador</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .accessibility-popup {
+            display: none;
+            position: fixed;
+            top: 1px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .btn-accessibility {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1050;
+        }
+
+        /* Estilos para modos de daltonismo */
+        body.protanopia {
+            filter: grayscale(80%) sepia(20%);
+        }
+
+        body.deuteranopia {
+            filter: grayscale(50%) sepia(50%);
+        }
+
+        body.tritanopia {
+            filter: hue-rotate(90deg);
+        }
+
+        body.acromatopsia {
+            filter: grayscale(100%);
+        }
+        
+        body.dark-mode {
+            background-color: #4a4a4a;
+            color: #ffffff;
+        }
+
+        .dark-mode {
+            background-color: #4a4a4a !important;
+            color: #ffffff !important;
+        }
+
+        .dark-mode .form-container, .dark-mode .accessibility-popup {
+            background-color: #4a4a4a;
+        }
+
+        .dark-mode *:not(.form-container) {
+            background-color: #4a4a4a !important;
+            color: #ffffff !important;
+        }
+
+        .dark-mode ::placeholder {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="accessibility-popup" id="accessibility-popup">
+        <h5 id="popup-title">Acessibilidade</h5>
+        <div>
+            <label id= "fontsize" for="font-size">Ajustar tamanho da fonte:</label>
+            <select id="font-size" onchange="adjustFontSize()">
+                <option value="14px">Pequeno</option>
+                <option value="18px">Médio</option>
+                <option value="22px">Grande</option>
+            </select>
+        </div>
+        <div>
+            <label id="lingua" for="language-select">Idioma:</label>
+            <select id="language-select" onchange="translatePage()">
+                <option value="pt">Português</option>
+                <option value="en">Inglês</option>
+                <option value="es">Espanhol</option>
+            </select>
+        </div>
+        <div>
+            <label id="Daltonico" for="color-calibration">Calibrar para daltônicos:</label>
+            <select id="color-calibration" onchange="adjustColors()">
+                <option value="default">Padrão</option>
+                <option value="protanopia">Protanopia</option>
+                <option value="deuteranopia">Deuteranopia</option>
+                <option value="tritanopia">Tritanopia</option>
+                <option value="acromatopsia">Acromatopsia</option>
+            </select>
+        </div>
+        <div>
+            <label for="dark-mode" id="label-dark-mode">Modo Escuro:</label>
+            <input type="checkbox" id="dark-mode" onchange="toggleDarkMode()">
+        </div>
+        <div>
+            <button id="Close" class="btn btn-secondary" onclick="closePopup()">Fechar</button>
+        </div>
+    </div>
+
+    <button id="Butao" class="btn-accessibility" onclick="togglePopup()">Acessibilidade</button>
+
+    <div class="form-container">
+        <h1 id="form-title" class="text-center mb-4">Registo de Utilizador</h1>
+        <form id="userForm" method="POST" action="process.php" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label id="label-fullName" for="fullName" class="form-label">Nome Completo</label>
+                <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Digite o seu nome completo" required>
+            </div>
+            <div class="mb-3">
+                <label id="label-birthDate" for="birthDate" class="form-label">Data de Nascimento</label>
+                <input type="date" id="birthDate" name="birthDate" class="form-control" required min="1900-01-01" max="2024-12-31">
+            </div>
+            <div class="mb-3">
+                <label id="label-address" for="address" class="form-label">Morada</label>
+                <input type="text" id="address" name="address" class="form-control" placeholder="Digite a sua morada" required>
+            </div>
+            <div class="mb-3">
+                <label id="label-email" for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Digite o seu email" required>
+            </div>
+            <div class="mb-3">
+                <label id="label-phone" for="phone" class="form-label">Nº de Telefone</label>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="Digite o seu número de telefone" required pattern="^\d{7,10}$">
+            </div>
+            <div class="mb-3">
+                <label id="label-gender" for="gender" class="form-label">Género</label>
+                <select id="gender" name="gender" class="form-select" required>
+                    <option value="">Selecione...</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label id="label-photo" for="photo" class="form-label">Fotografia</label>
+                <input type="file" id="photo" name="photo" class="form-control" accept="image/*" required>
+            </div>
+            <div class="mb-3">
+                <label id="label-identification" for="idDocument" class="form-label">Documento de Identificação</label>
+                <input type="file" id="idDocument" name="idDocument" class="form-control" required>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <button type="reset" id="btn-reset" class="btn btn-secondary">Inicializar</button>
+                <button type="submit" id="btn-submit" class="btn btn-primary">Submeter</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const translations = {
+            pt: {
+                "form-title": "Registo de Utilizador",
+                "label-fullName": "Nome Completo",
+                "placeholder-fullName": "Digite o seu nome completo",
+                "label-birthDate": "Data de Nascimento",
+                "label-address": "Morada",
+                "label-email": "Email",
+                "label-phone": "Nº de Telefone",
+                "placeholder-phone": "Digite o seu número de telefone",
+                "label-gender": "Genero",
+                "label-photo": "Fotografia",
+                "btn-reset": "Inicializar",
+                "btn-submit": "Submeter",
+                "popup-title": "Acessibilidade",
+                "fontsize": "Ajustar tamanho da fonte:",
+                "lingua":"Linguagem:",
+                "Daltonico":"Calibrar para daltonicos:",
+                "label-dark-mode": "Modo Escuro",
+                "Close": "Fechar",
+                "Butao": "Acessibilidade",
+                "label-identification": "Documento de Identificaçao",
+                "placeholder-email": "Digite o seu email",
+                "gender-options": ["Selecionar...", "Masculino", "Feminino", "Outro"],
+                "font-options": ["Pequeno", "Medio", "Grande"],
+                "language-options": ["Portugues", "Ingles", "Espanhol"],
+                "placeholder-address": "Digite a sua morada"
+            },
+            en: {
+                "form-title": "User Registration",
+                "label-fullName": "Full Name",
+                "placeholder-fullName": "Type your full name",
+                "label-birthDate": "Date of Birth",
+                "label-address": "Address",
+                "placeholder-address": "Type your address",
+                "label-email": "Email",
+                "placeholder-email": "Type your email",
+                "label-phone": "Phone Number",
+                "placeholder-phone": "Type your phone number",
+                "label-gender": "Gender",
+                "gender-options": ["Select...", "Male", "Female", "Other"],
+                "label-photo": "Photo",
+                "btn-reset": "Reset",
+                "btn-submit": "Submit",
+                "popup-title": "Accessibility",
+                "label-identification": "Identification Document",
+                "label-darkmode": "Dark Mode",
+                "fontsize": "Adjust font size:",
+                "lingua":"Language",
+                "font-options": ["Small", "Medium", "Large"],
+                "language-options": ["Portuguese", "English", "Spanish"],
+                "calibration-options": ["Default", "Protanopia", "Deuteranopia", "Tritanopia", "Achromatopsia"],
+                "Daltonico":"Calibrate for color blind people:",
+                "label-dark-mode": "Dark Mode",
+                "Close": "Close",
+                "Butao": "Accessibility"
+            },
+            es: {
+                "form-title": "Registro de Usuario",
+                "label-fullName": "Nombre Completo",
+                "placeholder-fullName": "Ingresa tu nombre completo",
+                "label-birthDate": "Fecha de Nacimiento",
+                "label-address": "Dirección",
+                "placeholder-address": "Ingresa tu dirección",
+                "label-email": "Correo Electrónico",
+                "label-phone": "Número de Teléfono",
+                "placeholder-phone": "Ingresa tu número de teléfono",
+                "label-gender": "Género",
+                "gender-options": ["Seleccione...", "Masculino", "Femenino", "Otro"],
+                "label-photo": "Fotografía",
+                "btn-reset": "Restablecer",
+                "btn-submit": "Enviar",
+                "popup-title": "Accesibilidad",
+                "label-identification": "Documento de Identificación",
+                "label-darkmode": "Modo Oscuro",
+                "fontsize": "Ajustar el tamaño de fuente:",
+                "font-options": ["Pequeño", "Mediano", "Grande"],
+                "lingua":"Idioma",
+                "Daltonico":"Calibrar para daltónicos:",
+                "label-dark-mode": "Modo Oscuro",
+                "Close": "Cerrar",
+                "Butao": "Accesibilidad",
+                "language-options": ["Portugues", "Ingles", "Espanhol"],
+                "placeholder-email": "Ingressa tu correo electronico"
+            }
+        };
+
+        function translatePage() {
+            const lang = document.getElementById('language-select').value;
+            const elementsToTranslate = Object.keys(translations[lang]);
+
+            elementsToTranslate.forEach(key => {
+                // Tradução dos placeholders
+                if (key.startsWith('placeholder-')) {
+                    const elementId = key.replace('placeholder-', '');
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        element.placeholder = translations[lang][key];
+                    }
+                } 
+                // Tradução das opções de gênero
+                else if (key === "gender-options") {
+                    const genderSelect = document.getElementById('gender');
+                    genderSelect.innerHTML = ''; // Limpa as opções anteriores
+                    translations[lang][key].forEach(optionText => {
+                        const option = document.createElement('option');
+                        option.textContent = optionText;
+                        genderSelect.appendChild(option);
+                    });
+                }
+                // Tradução das opções de tamanho de fonte
+                else if (key === "font-options") {
+                    const fontSelect = document.getElementById('font-size');
+                    const fontValues = ["14px", "18px", "22px"];
+                    fontSelect.innerHTML = ''; // Limpa as opções anteriores
+                    translations[lang][key].forEach((optionText, index) => {
+                        const option = document.createElement('option');
+                        option.textContent = optionText;
+                        option.value = fontValues[index]; // Mantém os valores intactos
+                        fontSelect.appendChild(option);
+                    });
+                }
+                
+                // Tradução de outros elementos de texto
+                else {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.textContent = translations[lang][key];
+                    }
+                }
+            });
+        }
+
+        function adjustColors() {
+            const mode = document.getElementById('color-calibration').value;
+            document.body.className = mode;
+        }
+
+        function adjustFontSize() {
+            const fontSize = document.getElementById('font-size').value;
+            document.body.style.fontSize = fontSize;
+        }
+
+        function togglePopup() {
+            const popup = document.getElementById('accessibility-popup');                        
+            popup.style.display = 'block';
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('accessibility-popup');            
+            popup.style.display = 'none';            
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.querySelectorAll('*').forEach(el => {                
+                el.classList.toggle('dark-mode');                
+            });
+        }
+
+    </script>
+</body>
+</html>
